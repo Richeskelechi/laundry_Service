@@ -1,37 +1,52 @@
-const { validatePhoneNumber } = require('../Validations/customerValidations')
+const { validatePhoneNumber, validateOTPDetails } = require('../Validations/customerValidations')
 const { generateOTP, sendOTP } = require('../Helpers/customerHelpers')
-const { savePhoneNumberOTP } = require('../DatabaseAPICalls/customerAPICalls');
-const logger = require('../StartUp/logger');
-
+const { savePhoneNumberOTP, verifyAndDeleteOTP } = require('../DatabaseAPICalls/customerAPICalls');
+const { successResponse, errorResponse} = require('../Response/CustomerResponse')
 
 const verifyPhoneNumberService = async (req) => {
     try {
         const isValidPhoneNumber = validatePhoneNumber(req.body.phoneNumber);
         if (!isValidPhoneNumber) {
-            return { ok: false, statusCode: 400, message: "Failure", data: "Invalid Phone Number. Phone Numbers Must Start With +234 And Have 10 More Digits" }
+            return errorResponse(400, "Invalid Phone Number. Phone Numbers Must Start With +234 And Have 10 More Digits")
         } else {
             const otp = await generateOTP()
             const savedOTP = await savePhoneNumberOTP(req.body.phoneNumber, otp)
             if (savedOTP._id) {
                 const isOTPSent = await sendOTP(req.body.phoneNumber, otp)
                 if (isOTPSent) {
-                    logger.info(`OTP saved And Sent Successfully`)
-                    return { ok: true, statusCode: 200, message: "Success", data: "Code sent to the provided Number. Also Note That Verification Code Expires In 5 minutes" }
+                    return successResponse(200, "Code sent to the provided Number. Also Note That Verification Code Expires In 5 minutes")
                 } else {
-                    logger.error(`OTP Not Saved Or Sent Successfully`)
-                    return { ok: false, statusCode: 400, message: "Success", data: "Code Not sent to the provided Number. Please Check The Number And Try Again" }
+                    return errorResponse(400, "Code Not sent to the provided Number. Please Check The Number And Try Again")
                 }
             } else {
-                return { ok: false, statusCode: 400, message: "Failure", data: "otp Not Saved" }
+                return errorResponse(400, "otp Not Saved")
             }
-
         }
     } catch (error) {
-        return { ok: false, statusCode: 400, message: 'Failure', data: err.message
+        return errorResponse(400, error.message)
+    }
+}
+
+const verifyAndDeleteOTPService = async(req) =>{
+    try{
+        const isValidOTPDetails = validateOTPDetails(req.body);
+        if(isValidOTPDetails != true){
+            return errorResponse(400, isValidOTPDetails)
+        }else{
+            const isVerified = await verifyAndDeleteOTP(req.body.phoneNumber, req.body.code)
+            if(isVerified == 'Expired'){
+                return errorResponse(400, "Expired OTP Code. Please generate a new OTP") 
+            }else if(isVerified == 'Invalid'){
+                return errorResponse(400, "Invalid OTP Code. Please Enter a valid OTP");
+            }else{
+                return successResponse(200, "Number Verified Successfully")
+            }
         }
+    }catch(error){
+        return errorResponse(400, error.message)
     }
 }
 
 module.exports = {
-    verifyPhoneNumberService
+    verifyPhoneNumberService, verifyAndDeleteOTPService
 }

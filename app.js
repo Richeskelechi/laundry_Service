@@ -1,7 +1,6 @@
 const express = require('express');
 const schedule = require('node-schedule');
 const app = express();
-// const userRoutes = require('./routes/userRoute')
 
 const logger = require('./StartUp/logger');
 const { deleteExpiredOTP } = require('./Jobs/customerJobs')
