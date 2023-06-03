@@ -1,7 +1,7 @@
 const { validatePhoneNumber, validateOTPDetails } = require('../Validations/customerValidations')
 const { generateOTP, sendOTP } = require('../Helpers/customerHelpers')
-const { savePhoneNumberOTP, verifyAndDeleteOTP } = require('../DatabaseAPICalls/customerAPICalls');
-const { successResponse, errorResponse} = require('../Response/CustomerResponse')
+const { verifyPhoneUser, savePhoneNumberOTP, verifyAndDeleteOTP } = require('../DatabaseAPICalls/customerAPICalls');
+const { successResponse, errorResponse } = require('../Response/CustomerResponse')
 
 const verifyPhoneNumberService = async (req) => {
     try {
@@ -9,17 +9,24 @@ const verifyPhoneNumberService = async (req) => {
         if (!isValidPhoneNumber) {
             return errorResponse(400, "Invalid Phone Number. Phone Numbers Must Start With +234 And Have 10 More Digits")
         } else {
-            const otp = await generateOTP()
-            const savedOTP = await savePhoneNumberOTP(req.body.phoneNumber, otp)
-            if (savedOTP._id) {
-                const isOTPSent = await sendOTP(req.body.phoneNumber, otp)
-                if (isOTPSent) {
-                    return successResponse(200, "Code sent to the provided Number. Also Note That Verification Code Expires In 5 minutes")
-                } else {
-                    return errorResponse(400, "Code Not sent to the provided Number. Please Check The Number And Try Again")
-                }
+            const isVerifiedPhoneNumber = verifyPhoneUser(req.body.phoneNumber)
+            if (isVerifiedPhoneNumber == "account Created") {
+                return successResponse(200, "account Created")
+            } else if (isVerifiedPhoneNumber == "account Verified") {
+                return successResponse(200, "create Account")
             } else {
-                return errorResponse(400, "otp Not Saved")
+                const otp = await generateOTP()
+                const savedOTP = await savePhoneNumberOTP(req.body.phoneNumber, otp)
+                if (savedOTP._id) {
+                    const isOTPSent = await sendOTP(req.body.phoneNumber, otp)
+                    if (isOTPSent) {
+                        return successResponse(200, "Code sent to the provided Number. Also Note That Verification Code Expires In 5 minutes")
+                    } else {
+                        return errorResponse(400, "Code Not sent to the provided Number. Please Check The Number And Try Again")
+                    }
+                } else {
+                    return errorResponse(400, "otp Not Saved")
+                }
             }
         }
     } catch (error) {
@@ -27,22 +34,26 @@ const verifyPhoneNumberService = async (req) => {
     }
 }
 
-const verifyAndDeleteOTPService = async(req) =>{
-    try{
+const verifyAndDeleteOTPService = async (req) => {
+    try {
         const isValidOTPDetails = validateOTPDetails(req.body);
-        if(isValidOTPDetails != true){
+        if (isValidOTPDetails != true) {
             return errorResponse(400, isValidOTPDetails)
-        }else{
+        } else {
             const isVerified = await verifyAndDeleteOTP(req.body.phoneNumber, req.body.code)
-            if(isVerified == 'Expired'){
-                return errorResponse(400, "Expired OTP Code. Please generate a new OTP") 
-            }else if(isVerified == 'Invalid'){
-                return errorResponse(400, "Invalid OTP Code. Please Enter a valid OTP");
-            }else{
-                return successResponse(200, "Number Verified Successfully")
+            if (isVerified == 'Expired') {
+                return errorResponse(400, "Expired OTP Code. Please generate a new OTP")
+            } else if (isVerified == 'Invalid') {
+                return errorResponse(401, "Invalid OTP Code. Please Enter a valid OTP");
+            }else if(isVerified == 'notExist'){
+                return errorResponse(404, "Invalid User. User Does Not Exist");
+            }else if( isVerified == 'AlreadyVerified'){
+                return errorResponse(200, "User Already Verified");
+            }else {
+                return successResponse(201, "Number Verified Successfully")
             }
         }
-    }catch(error){
+    } catch (error) {
         return errorResponse(400, error.message)
     }
 }

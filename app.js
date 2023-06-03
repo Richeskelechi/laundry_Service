@@ -3,7 +3,7 @@ const schedule = require('node-schedule');
 const app = express();
 
 const logger = require('./StartUp/logger');
-const { deleteExpiredOTP } = require('./Jobs/customerJobs')
+const { deleteExpiredOTP, deleteUnverifiedPhoneNumbers } = require('./Jobs/customerJobs')
 require("./startUp/cors")(app)
 require("./startUp/allRoutes")(app);
 require('dotenv').config()
@@ -28,6 +28,9 @@ const start = async () => {
 start()
 // Start the scheduler to delete expired OTPs
 schedule.scheduleJob('*/5 * * * *', deleteExpiredOTP); // Runs every 5 minute
+// Start the scheduler to delete Unverified Phone Numbers
+schedule.scheduleJob('0 2 * * *', deleteUnverifiedPhoneNumbers); // Runs every 2AM
+
 module.exports = {
     app, server
 }

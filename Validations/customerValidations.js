@@ -15,7 +15,10 @@ function validateOTPDetails(req){
         return true
     }
 }
+function validateUserDetails(req){
+
+}
 
 module.exports = {
-    validatePhoneNumber, validateOTPDetails
+    validatePhoneNumber, validateOTPDetails, validateUserDetails
 }
