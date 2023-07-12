@@ -1,6 +1,6 @@
-const { validatePhoneNumber, validateOTPDetails } = require('../Validations/customerValidations')
+const { validatePhoneNumber, validateOTPDetails, validateCustomerDetails } = require('../Validations/customerValidations')
 const { generateOTP, sendOTP } = require('../Helpers/customerHelpers')
-const { verifyPhoneUser, savePhoneNumberOTP, verifyAndDeleteOTP } = require('../DatabaseAPICalls/customerAPICalls');
+const { verifyPhoneUser, savePhoneNumberOTP, verifyAndDeleteOTP, isNumberExist, customerExists, createCustomer } = require('../DatabaseAPICalls/customerAPICalls');
 const { successResponse, errorResponse } = require('../Response/CustomerResponse')
 
 const verifyPhoneNumberService = async (req) => {
@@ -9,7 +9,7 @@ const verifyPhoneNumberService = async (req) => {
         if (!isValidPhoneNumber) {
             return errorResponse(400, "Invalid Phone Number. Phone Numbers Must Start With +234 And Have 10 More Digits")
         } else {
-            const isVerifiedPhoneNumber = verifyPhoneUser(req.body.phoneNumber)
+            const isVerifiedPhoneNumber = await verifyPhoneUser(req.body.phoneNumber)
             if (isVerifiedPhoneNumber == "account Created") {
                 return successResponse(200, "account Created")
             } else if (isVerifiedPhoneNumber == "account Verified") {
@@ -58,6 +58,38 @@ const verifyAndDeleteOTPService = async (req) => {
     }
 }
 
+const createCustomerService = async (req) => {
+    try {
+        const isValidCustomerDetails = validateCustomerDetails(req.body);
+        if (isValidCustomerDetails != true) {
+            return errorResponse(400, isValidCustomerDetails)
+        } else {
+            const isVerifiedPhoneNumber = await isNumberExist(req.body.phoneNumber)
+            if (isVerifiedPhoneNumber == "account Created") {
+                return errorResponse(400, "Customer With This Number Exist Already")
+            } else if (isVerifiedPhoneNumber == "account Unverified") {
+                return errorResponse(400, "Phone Number Unverified, Please Verify Phone Number First")
+            }else if(isVerifiedPhoneNumber == "notExist"){
+                return errorResponse(404, "Invalid User. User With This Number Does Not Exist Already. Please Verify Phone Number First");
+            } else {
+                const accountExists = await customerExists(req.body.phoneNumber);
+                if (accountExists == "exist") {
+                    return errorResponse(400, "Customer With This Number Exist Already")
+                }else{
+                    const userCreated = await createCustomer(req.body)
+                    if(userCreated){
+                        return successResponse(201, "Customer Created Successfully")
+                    }else{
+                        return errorResponse(400, "Customer Not Created")
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        return errorResponse(400, error.message)
+    }
+}
+
 module.exports = {
-    verifyPhoneNumberService, verifyAndDeleteOTPService
+    verifyPhoneNumberService, verifyAndDeleteOTPService, createCustomerService
 }

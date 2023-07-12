@@ -46,10 +46,6 @@ const customerSchema = new Schema({
         required: true,
         default: "Active"
     },
-    expiration: {
-        type: Date,
-        required: true
-    },
     password: {
         type: String,
         trim: true,

@@ -28,6 +28,7 @@
     "node-schedule": "^2.1.1",
     "supertest": "^6.3.3",
     "twilio": "^4.11.1",
+    "uuid": "^9.0.0",
     "winston": "^3.8.2"
   }
 }

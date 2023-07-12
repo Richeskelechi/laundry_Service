@@ -1,6 +1,8 @@
 const PhoneNumberOTP = require('../Models/PhoneNumberOTP')
 const UserPhoneNumber = require('../Models/UserPhoneNumbers')
-
+const Customer = require('../Models/Customer')
+const { v4: uuidv4 } = require('uuid');
+const uniqueID = uuidv4();
 async function verifyPhoneUser(phoneNumber) {
     const exist = await UserPhoneNumber.findOne({ phoneNumber });
     if (exist) {
@@ -85,7 +87,7 @@ async function verifyAndDeleteOTP(phoneNumber, code) {
                     return 'Invalid'
                 }
             }
-        }else{
+        } else {
             return "notExist"
         }
     } catch (error) {
@@ -94,6 +96,56 @@ async function verifyAndDeleteOTP(phoneNumber, code) {
     }
 }
 
+async function isNumberExist(phoneNumber) {
+    const exist = await UserPhoneNumber.findOne({ phoneNumber });
+    if (exist) {
+        if (exist.isAccountCreated) {
+            return "account Created"
+        } else if (exist.isVerified) {
+            return "account Verified"
+        } else {
+            return "account Unverified"
+        }
+    } else {
+        return "notExist"
+    }
+}
+
+async function customerExists(detail) {
+    if (detail.length < 1) {
+        return "notExist"
+    } else {
+        const accountExist = await Customer.findOne({
+            $or: [
+                { phoneNumber: detail },
+                { email: detail },
+                { customerId: detail }
+            ]
+        });
+        if (accountExist) {
+            return "exist"
+        } else {
+            return "notExist"
+        }
+    }
+}
+async function createCustomer(newCustomer) {
+    newCustomer.customerId = uniqueID
+    let phoneNumber = newCustomer.phoneNumber
+    console.log(phoneNumber);
+    const accountCreated = await Customer.create(newCustomer);
+    if (accountCreated) {
+        await UserPhoneNumber.updateOne(
+            { phoneNumber },
+            { $set: { customerId: newCustomer.customerId, isAccountCreated: true } }
+          );
+        return true; // Account creation was successful
+    } else {
+        return false; // Account creation failed
+    }
+}
+
+
 module.exports = {
-    savePhoneNumberOTP, deleteExpiredOTPS, deleteUnverifiedNumbers, verifyAndDeleteOTP, verifyPhoneUser
+    savePhoneNumberOTP, deleteExpiredOTPS, deleteUnverifiedNumbers, verifyAndDeleteOTP, verifyPhoneUser, isNumberExist, customerExists, createCustomer
 }
