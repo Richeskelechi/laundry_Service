@@ -18,6 +18,11 @@ const phoneNumberSchema = new Schema({
     required:true,
     default:false
   },
+  customerId:{
+    type:String,
+    unique:true,
+    default:""
+  },
   expiration: {
     type: Date,
     required: true

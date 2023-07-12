@@ -11,7 +11,7 @@ async function generateOTP() {
 async function sendOTP(phoneNumber, otp){
     const client = twilio(accountSid, authToken);
     try {
-        const message = await client.messages.create({
+        await client.messages.create({
           body: 'Below is your 6 digit Verification Code. Please This Verification Code Expires in 5 minutes. Your Verification Code is: '+ otp,
           from: ownNumber,
           to: phoneNumber

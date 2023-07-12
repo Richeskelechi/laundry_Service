@@ -9,8 +9,6 @@ require("./startUp/allRoutes")(app);
 require('dotenv').config()
 const connectDB = require('./StartUp/connect')
 
-// app.use('/api/v1', userRoutes)
-
 const port = process.env.PORT || 7070;
 let server
 const start = async () => {

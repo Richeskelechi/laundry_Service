@@ -16,6 +16,11 @@ const customerSchema = new Schema({
         unique: true,
         required: true
     },
+    customerId:{
+        type: String,
+        unique: true,
+        required: true
+    },
     email: {
         type: String,
         required: true,
