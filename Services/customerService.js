@@ -1,6 +1,6 @@
-const { validatePhoneNumber, validateOTPDetails, validateCustomerDetails } = require('../Validations/customerValidations')
+const { validatePhoneNumber, validateOTPDetails, validateCustomerDetails, validateCustomerLoginDetails } = require('../Validations/customerValidations')
 const { generateOTP, sendOTP } = require('../Helpers/customerHelpers')
-const { verifyPhoneUser, savePhoneNumberOTP, verifyAndDeleteOTP, isNumberExist, customerExists, createCustomer, getCustomerData } = require('../DatabaseAPICalls/customerAPICalls');
+const { verifyPhoneUser, savePhoneNumberOTP, verifyAndDeleteOTP, isNumberExist, customerExists, createCustomer, getCustomerData, loginCustomer } = require('../DatabaseAPICalls/customerAPICalls');
 const { successResponse, errorResponse } = require('../Response/CustomerResponse')
 
 const verifyPhoneNumberService = async (req) => {
@@ -108,7 +108,23 @@ const checkCustomerExistService = async (req) => {
         return errorResponse(400, error.message)
     }
 }
+const loginCustomerService = async (req) => {
+    try {
+        const isValidCustomerDetails = validateCustomerLoginDetails(req.body);
+        if (isValidCustomerDetails != true) {
+            return errorResponse(400, isValidCustomerDetails)
+        }
+        const isLoggedIn = await loginCustomer(req.body)
+        if (isLoggedIn != false) {
+            return successResponse(200, isLoggedIn)
+        }
+        return errorResponse(404, "Invalid User")
+    } catch (error) {
+        return errorResponse(400, error.message)
+    }
+}
+
 
 module.exports = {
-    verifyPhoneNumberService, verifyAndDeleteOTPService, createCustomerService, getCustomerDetailService, checkCustomerExistService
+    verifyPhoneNumberService, verifyAndDeleteOTPService, createCustomerService, getCustomerDetailService, checkCustomerExistService, loginCustomerService
 }

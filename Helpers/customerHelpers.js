@@ -1,8 +1,10 @@
 require('dotenv').config()
 const twilio = require('twilio');
+var jwt = require('jsonwebtoken');
 const accountSid = process.env.ACCOUNT_SID
 const authToken = process.env.AUTH_TOKEN
 const ownNumber = process.env.SENDER_NUMBER
+const secret = process.env.JWT_SECRET
 async function generateOTP() {
     const min = 100000; // Minimum value (inclusive)
     const max = 999999; // Maximum value (inclusive)
@@ -22,6 +24,10 @@ async function sendOTP(phoneNumber, otp){
       }
 }
 
+async function genAuthenticationToken(customerId){
+    return jwt.sign({ customerId: customerId }, secret, { expiresIn: '5h' });
+}
+
 module.exports = {
-    generateOTP, sendOTP
+    generateOTP, sendOTP, genAuthenticationToken
 }

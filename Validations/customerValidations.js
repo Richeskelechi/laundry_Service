@@ -52,6 +52,22 @@ function validateCustomerDetails(req){
     }
 }
 
+function validateCustomerLoginDetails(req){
+    const emailRegex  = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+    const phoneNumberRegex = /^\+234[\d]{10}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,100}$/
+
+    if (req.hasOwnProperty("emailPhoneNumber") === false) {
+        return 'Please Provide A Phone Number Or Email Address';
+    }else if (!(phoneNumberRegex.test(req.emailPhoneNumber) || emailRegex.test(req.emailPhoneNumber))) {
+        return 'Invalid Phone Number Or Email Address Format.';
+    }else if(passwordRegex.test(req.password) === false){
+        return 'Password Must Be At Least 8 Characters And Must Contain One Uppercase Letter, One Lowercase Letter, One Number And One Special Character'
+    }else{
+        return true
+    }
+}
+
 module.exports = {
-    validatePhoneNumber, validateOTPDetails, validateCustomerDetails
+    validatePhoneNumber, validateOTPDetails, validateCustomerDetails, validateCustomerLoginDetails
 }

@@ -1,4 +1,4 @@
-const { verifyPhoneNumberService, verifyAndDeleteOTPService, createCustomerService, getCustomerDetailService, checkCustomerExistService } = require('../Services/customerService')
+const { verifyPhoneNumberService, verifyAndDeleteOTPService, createCustomerService, getCustomerDetailService, checkCustomerExistService, loginCustomerService } = require('../Services/customerService')
 
 const verifyPhoneNumberController = async (req, res) => {
     try {
@@ -44,7 +44,15 @@ const checkCustomerExistController = async (req, res) => {
         return res.status(500).json(error)
     }
 }
+const loginCustomerController = async (req, res) => {
+    try {
+        const response = await loginCustomerService(req)
+        return res.status(response.statusCode).json(response)
+    } catch (error) {
+        return res.status(500).json(error)
+    }
+}
 
 module.exports = {
-    verifyPhoneNumberController, verifyAndDeleteOTPController, createCustomerController, getCustomerDetailsController, checkCustomerExistController
+    verifyPhoneNumberController, verifyAndDeleteOTPController, createCustomerController, getCustomerDetailsController, checkCustomerExistController, loginCustomerController
 }

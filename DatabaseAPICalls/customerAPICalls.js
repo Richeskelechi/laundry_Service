@@ -1,8 +1,12 @@
+require('dotenv').config()
 const PhoneNumberOTP = require('../Models/PhoneNumberOTP')
 const UserPhoneNumber = require('../Models/UserPhoneNumbers')
 const Customer = require('../Models/Customer')
+const { genAuthenticationToken } = require('../Helpers/customerHelpers')
+const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const uniqueID = uuidv4();
+const saltRounds = +(process.env.SALT_ROUND)
 async function verifyPhoneUser(phoneNumber) {
     try {
         const exist = await UserPhoneNumber.findOne({ phoneNumber });
@@ -157,6 +161,7 @@ async function customerExists(detail) {
 async function createCustomer(newCustomer) {
     try {
         newCustomer.customerId = uniqueID
+        newCustomer.password = await bcrypt.hash(newCustomer.password, saltRounds);
         let phoneNumber = newCustomer.phoneNumber
         const accountCreated = await Customer.create(newCustomer);
         if (accountCreated) {
@@ -195,6 +200,40 @@ async function getCustomerData(customer) {
 
 }
 
+async function loginCustomer(customer) {
+    let customerDetail = customer.emailPhoneNumber
+    try {
+        const customerDetails = await Customer.findOne({
+            $or: [
+                { phoneNumber: customerDetail },
+                { email: customerDetail },
+            ]
+        });
+        if (customerDetails) {
+            // Compare the provided password with the stored hashed password
+            const isMatch = await bcrypt.compare(customer.password, customerDetails.password);
+            if (isMatch) {
+                const token = await genAuthenticationToken(customerDetails.customerId)
+                let returnedCustomer = {
+                    email: customerDetails.email,
+                    phoneNumber: customerDetails.phoneNumber,
+                    firstName: customerDetails.firstName,
+                    lastName: customerDetails.lastName,
+                    customerId: customerDetails.customerId,
+                    token: token
+                }
+                return returnedCustomer
+            } else {
+                return false
+            }
+        }else{
+            return false
+        }
+    } catch (error) {
+        return false
+    }
+}
+
 module.exports = {
-    savePhoneNumberOTP, deleteExpiredOTPS, deleteUnverifiedNumbers, verifyAndDeleteOTP, verifyPhoneUser, isNumberExist, customerExists, createCustomer, getCustomerData
+    savePhoneNumberOTP, deleteExpiredOTPS, deleteUnverifiedNumbers, verifyAndDeleteOTP, verifyPhoneUser, isNumberExist, customerExists, createCustomer, getCustomerData, loginCustomer
 }
