@@ -222,6 +222,9 @@ async function loginCustomer(customer) {
                     customerId: customerDetails.customerId,
                     token: token
                 }
+                await Customer.findOneAndUpdate({ phoneNumber: customerDetails.phoneNumber }, { isLoggedIn: true }, {
+                    new: true
+                })
                 return returnedCustomer
             } else {
                 return false
@@ -234,6 +237,22 @@ async function loginCustomer(customer) {
     }
 }
 
+async function saveDeviceToken(phoneNumber, deviceToken) {
+    try {
+        const savedToken = await UserPhoneNumber.findOneAndUpdate({ phoneNumber: phoneNumber }, { firebaseToken: deviceToken }, {
+            new: true
+        })
+        if (savedToken) {
+            return savedToken
+        }else{
+            return "error"
+        }
+    } catch (error) {
+        return "error"
+    }
+
+}
+
 module.exports = {
-    savePhoneNumberOTP, deleteExpiredOTPS, deleteUnverifiedNumbers, verifyAndDeleteOTP, verifyPhoneUser, isNumberExist, customerExists, createCustomer, getCustomerData, loginCustomer
+    savePhoneNumberOTP, deleteExpiredOTPS, deleteUnverifiedNumbers, verifyAndDeleteOTP, verifyPhoneUser, isNumberExist, customerExists, createCustomer, getCustomerData, loginCustomer, saveDeviceToken
 }

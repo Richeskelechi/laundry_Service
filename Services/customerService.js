@@ -1,6 +1,6 @@
-const { validatePhoneNumber, validateOTPDetails, validateCustomerDetails, validateCustomerLoginDetails } = require('../Validations/customerValidations')
+const { validatePhoneNumber, validateOTPDetails, validateCustomerDetails, validateCustomerLoginDetails, validateCustomerTokenDetails } = require('../Validations/customerValidations')
 const { generateOTP, sendOTP } = require('../Helpers/customerHelpers')
-const { verifyPhoneUser, savePhoneNumberOTP, verifyAndDeleteOTP, isNumberExist, customerExists, createCustomer, getCustomerData, loginCustomer } = require('../DatabaseAPICalls/customerAPICalls');
+const { verifyPhoneUser, savePhoneNumberOTP, verifyAndDeleteOTP, isNumberExist, customerExists, createCustomer, getCustomerData, loginCustomer, saveDeviceToken } = require('../DatabaseAPICalls/customerAPICalls');
 const { successResponse, errorResponse } = require('../Response/CustomerResponse')
 
 const verifyPhoneNumberService = async (req) => {
@@ -124,7 +124,25 @@ const loginCustomerService = async (req) => {
     }
 }
 
+const saveCustomerDeviceTokenService = async (req) => {
+    try{
+        const isValidToken = validateCustomerTokenDetails(req.body);
+        if (isValidToken != true) {
+            return errorResponse(400, isValidToken)
+        }else{
+            const savedToken = await saveDeviceToken(req.body.phoneNumber, req.body.deviceToken);
+            if(savedToken == 'error'){
+                return errorResponse(400, "Token Not Saved")
+            }else{
+                return successResponse(200, "Token Saved")
+            }  
+        }
+    }catch (error) {
+        return errorResponse(400, error.message)
+    }
+}
+
 
 module.exports = {
-    verifyPhoneNumberService, verifyAndDeleteOTPService, createCustomerService, getCustomerDetailService, checkCustomerExistService, loginCustomerService
+    verifyPhoneNumberService, verifyAndDeleteOTPService, createCustomerService, getCustomerDetailService, checkCustomerExistService, loginCustomerService, saveCustomerDeviceTokenService
 }

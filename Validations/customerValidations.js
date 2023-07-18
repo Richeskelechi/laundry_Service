@@ -68,6 +68,19 @@ function validateCustomerLoginDetails(req){
     }
 }
 
+function validateCustomerTokenDetails(req){
+    const phoneNumberRegex = /^\+234[\d]{10}$/;
+    const tokenRegex = /[a-zA-Z0-9]/;
+
+    if (phoneNumberRegex.test((req.phoneNumber)) === false) {
+        return 'Invalid Phone Number Format.';
+    }else if(tokenRegex.test(req.deviceToken) === false){
+        return 'Invalid Device Token';
+    }else{
+        return true
+    }
+}
+
 module.exports = {
-    validatePhoneNumber, validateOTPDetails, validateCustomerDetails, validateCustomerLoginDetails
+    validatePhoneNumber, validateOTPDetails, validateCustomerDetails, validateCustomerLoginDetails, validateCustomerTokenDetails
 }
