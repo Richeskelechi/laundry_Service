@@ -45,8 +45,10 @@ function validateCustomerDetails(req){
     }else if (req.customerLocation.lat < -90 || req.customerLocation.lat > 90 ||
         req.customerLocation.lng < -180 || req.customerLocation.lng > 180) {
       return "Invalid Lat Or Lng Coordinates";
-    }else if(passwordRegex.test(req.password) === false){
+    }else if(!req.hasOwnProperty("password") || passwordRegex.test(req.password) === false){
         return 'Password Must Be At Least 8 Characters And Must Contain One Uppercase Letter, One Lowercase Letter, One Number And One Special Character'
+    }else if(!req.hasOwnProperty("confirmPassword") || req.password != req.confirmPassword){
+        return 'Passwords Do Not Match'
     }else{
         return true
     }

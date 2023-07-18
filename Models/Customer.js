@@ -35,6 +35,8 @@ const customerSchema = new Schema({
     },
     address: {
         type: String,
+        required: true,
+        trim: true
     },
     customerLocation: { lat: Number, lng: Number },
     isLoggedIn: {
@@ -54,7 +56,6 @@ const customerSchema = new Schema({
     }
 }, { timestamps: true });
 
-// Create the OTP model
 const Customer = mongoose.model('Customer', customerSchema);
 
 module.exports = Customer;
