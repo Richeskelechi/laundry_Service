@@ -27,7 +27,17 @@ async function sendOTP(phoneNumber, otp){
 async function genAuthenticationToken(customerId){
     return jwt.sign({ customerId: customerId }, secret, { expiresIn: '5h' });
 }
+function returnedFormattedCustomer(customer, token){
+  return {
+    email: customer.email,
+    phoneNumber: customer.phoneNumber,
+    firstName: customer.firstName,
+    lastName: customer.lastName,
+    customerId: customer.customerId,
+    token: token
+}
+}
 
 module.exports = {
-    generateOTP, sendOTP, genAuthenticationToken
+    generateOTP, sendOTP, genAuthenticationToken, returnedFormattedCustomer
 }

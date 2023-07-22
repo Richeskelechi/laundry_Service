@@ -1,6 +1,6 @@
 require('dotenv').config()
 const Admin = require('../Models/Admin')
-const { genAuthenticationToken } = require('../Helpers/adminHelpers')
+const { genAuthenticationToken, returnedFormattedAdmin } = require('../Helpers/adminHelpers')
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const uniqueID = uuidv4();
@@ -59,17 +59,11 @@ async function loginAdmin(admin) {
             const isMatch = await bcrypt.compare(admin.password, adminDetails.password);
             if (isMatch) {
                 const token = await genAuthenticationToken(adminDetails.adminId)
-                let returnedAdmin = {
-                    email: adminDetails.email,
-                    phoneNumber: adminDetails.phoneNumber,
-                    firstName: adminDetails.firstName,
-                    lastName: adminDetails.lastName,
-                    adminId: adminDetails.adminId,
-                    token: token
-                }
+                
                 await Admin.findOneAndUpdate({ phoneNumber: adminDetails.phoneNumber }, { isLoggedIn: true }, {
                     new: true
                 })
+                let returnedAdmin = returnedFormattedAdmin(adminDetails, token)
                 return returnedAdmin
             } else {
                 return false

@@ -2,7 +2,7 @@ require('dotenv').config()
 const PhoneNumberOTP = require('../Models/PhoneNumberOTP')
 const UserPhoneNumber = require('../Models/UserPhoneNumbers')
 const Customer = require('../Models/Customer')
-const { genAuthenticationToken } = require('../Helpers/customerHelpers')
+const { genAuthenticationToken, returnedFormattedCustomer } = require('../Helpers/customerHelpers')
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const uniqueID = uuidv4();
@@ -214,17 +214,11 @@ async function loginCustomer(customer) {
             const isMatch = await bcrypt.compare(customer.password, customerDetails.password);
             if (isMatch) {
                 const token = await genAuthenticationToken(customerDetails.customerId)
-                let returnedCustomer = {
-                    email: customerDetails.email,
-                    phoneNumber: customerDetails.phoneNumber,
-                    firstName: customerDetails.firstName,
-                    lastName: customerDetails.lastName,
-                    customerId: customerDetails.customerId,
-                    token: token
-                }
                 await Customer.findOneAndUpdate({ phoneNumber: customerDetails.phoneNumber }, { isLoggedIn: true }, {
                     new: true
                 })
+
+                let returnedCustomer = returnedFormattedCustomer(customerDetails, token)
                 return returnedCustomer
             } else {
                 return false
