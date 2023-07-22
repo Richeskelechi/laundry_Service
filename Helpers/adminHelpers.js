@@ -1,9 +1,9 @@
 require('dotenv').config()
-var jwt = require('jsonwebtoken');
+let jwt = require('jsonwebtoken');
 const secret = process.env.JWT_SECRET_ADMIN
 
-async function genAuthenticationToken(adminId){
-    return jwt.sign({ adminId: adminId }, secret, { expiresIn: '5h' });
+async function genAuthenticationToken(adminId, access){
+    return jwt.sign({ adminId: adminId, adminAccess:access }, secret, { expiresIn: '5h' });
 }
 
 function returnedFormattedAdmin(admin, token){

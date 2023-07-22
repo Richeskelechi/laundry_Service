@@ -58,7 +58,7 @@ async function loginAdmin(admin) {
             // Compare the provided password with the stored hashed password
             const isMatch = await bcrypt.compare(admin.password, adminDetails.password);
             if (isMatch) {
-                const token = await genAuthenticationToken(adminDetails.adminId)
+                const token = await genAuthenticationToken(adminDetails.adminId, adminDetails.adminAccess)
                 
                 await Admin.findOneAndUpdate({ phoneNumber: adminDetails.phoneNumber }, { isLoggedIn: true }, {
                     new: true
